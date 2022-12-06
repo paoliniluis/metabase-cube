@@ -1,0 +1,56 @@
+cubes:
+  - name: People
+    shown: true
+    sql: SELECT * FROM public.people
+    joins:
+      - name: Orders
+        relationship: hasMany
+        sql: "{CUBE}.id = {Orders}.user_id"
+    dimensions:
+      - name: id
+        sql: id
+        type: number
+        primaryKey: true
+      - name: email
+        sql: email
+        type: string
+      - name: source
+        sql: source
+        type: string
+      - name: password
+        sql: password
+        type: string
+        shown: false
+      - name: zip
+        sql: zip
+        type: number
+      - name: address
+        sql: address
+        type: string
+      - name: name
+        sql: name
+        type: string
+      - name: city
+        sql: city
+        type: string
+      - name: state
+        sql: state
+        type: string
+      - name: created_at
+        sql: created_at
+        type: time
+      - name: birth_date
+        sql: birth_date
+        type: time
+      - name: longitude
+        sql: longitude
+        type: number
+      - name: latitude
+        sql: latitude
+        type: number
+      - name: domain
+        sql: SUBSTRING(email, POSITION('@' in email) + 1, LENGTH(email))
+        type: string
+      - name: age
+        sql: extract('YEAR' from now()) - extract ('YEAR' from birth_date)
+        type: number

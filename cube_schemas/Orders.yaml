@@ -1,0 +1,52 @@
+cubes:
+    - name: Orders
+      shown: true
+      sql: SELECT * FROM public.orders
+      joins:
+      - name: Products
+        relationship: belongsTo
+        sql: "{CUBE}.product_id = {Products}.id"
+      - name: People
+        relationship: belongsTo
+        sql: "{CUBE}.user_id = {People}.id"
+      pre_aggregations:
+        - name: totalRevenueByCategoryperMonth
+          measures:
+            - Orders.total
+          dimensions: 
+            - Products.category
+          timeDimension: Orders.created_at
+          granularity: month
+      dimensions:
+        - name: id
+          sql: id
+          type: number
+          primaryKey: true
+        - name: user_id
+          sql: user_id
+          type: number
+        - name: product_id
+          sql: product_id
+          type: number
+        - name: created_at
+          sql: created_at
+          type: time
+      measures:
+        - name: total
+          sql: total
+          type: sum
+        - name: quantity
+          sql: quantity
+          type: sum
+        - name: discount
+          sql: discount
+          type: sum
+        - name: subtotal
+          sql: subtotal
+          type: sum
+        - name: tax
+          sql: tax
+          type: sum
+        - name: count
+          sql: id
+          type: count

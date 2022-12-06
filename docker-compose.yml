@@ -1,0 +1,111 @@
+version: '3.9'
+services:
+  metabase-cubejs:
+    image: metabase/metabase-enterprise:v1.44.6
+    container_name: metabase-cubejs
+    hostname: metabase
+    volumes: 
+      - /dev/urandom:/dev/random:ro
+    ports:
+      - 3000:3000
+    environment: 
+      - "MB_DB_TYPE=postgres"
+      - "MB_DB_DBNAME=metabase"
+      - "MB_DB_PORT=5432"
+      - "MB_DB_USER=metabase"
+      - "MB_DB_PASS=mysecretpassword"
+      - "MB_DB_HOST=postgres-app-db-cubejs"
+      - "MB_SITE_URL=http://localhost:3000"
+      - "MB_PREMIUM_EMBEDDING_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      - "JAVA_OPTS=-XX:MaxRAMPercentage=100"
+    cpus: 2
+    mem_limit: 2048m
+    networks: 
+      - metanet1-metabase
+    depends_on: 
+      postgres-app-db-cubejs:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 20s
+      timeout: 5s
+      retries: 3
+  postgres-app-db-cubejs:
+    image: postgres:15.1-alpine
+    container_name: postgres-app-db-cubejs
+    hostname: postgres-app-db-cubejs
+    environment:
+      - "POSTGRES_USER=metabase"
+      - "POSTGRES_DB=metabase"
+      - "POSTGRES_PASSWORD=mysecretpassword"
+    volumes:
+      - $PWD/postgres_origin:/var/lib/postgresql/data
+    networks: 
+      - metanet1-metabase
+    cpus: 1
+    mem_limit: 128m
+    # command: -c log_statement=all
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  setup-cubejs:
+    image: bash:5.1.16
+    container_name: setup-cubejs
+    volumes:
+      - $PWD/setup:/tmp
+    networks:
+      - metanet1-metabase
+    depends_on:
+      metabase-cubejs:
+        condition: service_healthy
+    command: sh /tmp/metabase-setup.sh metabase:3000
+    cpus: 1
+    mem_limit: 128m
+  cubejs:
+    image: cubejs/cube:v0.31.15
+    container_name: cubejs
+    hostname: cubejs
+    ports:
+    - 4000:4000
+    environment:
+      - CUBEJS_DEV_MODE=true
+      - CUBEJS_DB_HOST=postgres-data-cubejs
+      - CUBEJS_DB_PORT=5432
+      - CUBEJS_DB_NAME=sample
+      - CUBEJS_DB_USER=metabase
+      - CUBEJS_DB_PASS=metasample123
+      - CUBEJS_DB_TYPE=postgres
+      - CUBEJS_PG_SQL_PORT=5432
+      - CUBEJS_SQL_USER=myusername
+      - CUBEJS_SQL_PASSWORD=mypassword
+    volumes:
+      - $PWD/cube_schemas:/cube/conf/schema
+    networks: 
+      - metanet1-cubejs
+      - metanet1-metabase
+    depends_on:
+      postgres-data-cubejs:
+        condition: service_healthy
+  postgres-data-cubejs:
+    image: metabase/qa-databases:postgres-sample-12
+    container_name: postgres-data-cubejs
+    hostname: postgres-data-cubejs
+    networks: 
+      - metanet1-cubejs
+    ports:
+      - 5432:5432
+    cpus: 1
+    mem_limit: 128m
+    command: -c log_statement=all
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d sample"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+networks: 
+  metanet1-metabase:
+    driver: bridge
+  metanet1-cubejs:
+    driver: bridge

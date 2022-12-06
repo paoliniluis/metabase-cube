@@ -1,0 +1,38 @@
+cubes:
+  - name: Products
+    shown: true
+    sql: SELECT * FROM public.products
+    joins:
+      - name: Reviews
+        relationship: hasMany
+        sql: "{CUBE}.id = {Reviews}.product_id"
+      - name: Orders
+        relationship: hasMany
+        sql: "{CUBE}.id = {Orders}.product_id"
+    dimensions:
+      - name: id
+        sql: id
+        type: number
+        primaryKey: true
+      - name: ean
+        sql: ean
+        type: number
+      - name: title
+        sql: title
+        type: string
+      - name: category
+        sql: category
+        type: string
+      - name: vendor
+        sql: vendor
+        type: string
+      - name: created_at
+        sql: created_at
+        type: time
+    measures:
+      - name: price
+        sql: price
+        type: sum
+      - name: rating
+        sql: rating
+        type: sum
