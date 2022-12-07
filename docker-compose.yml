@@ -64,7 +64,7 @@ services:
     cpus: 1
     mem_limit: 128m
   cubejs:
-    image: cubejs/cube:v0.31.15
+    image: cubejs/cube:v0.31.22
     container_name: cubejs
     hostname: cubejs
     ports:
@@ -81,7 +81,7 @@ services:
       - CUBEJS_SQL_USER=myusername
       - CUBEJS_SQL_PASSWORD=mypassword
     volumes:
-      - $PWD/cube_schemas:/cube/conf/schema
+      - $PWD/cube:/cube/conf
     networks: 
       - metanet1-cubejs
       - metanet1-metabase
