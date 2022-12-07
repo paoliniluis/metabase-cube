@@ -9,12 +9,14 @@ cubes:
       - name: People
         relationship: belongsTo
         sql: "{CUBE}.user_id = {People}.id"
+    # Use case 3. Caching and query acceleration
     pre_aggregations:
-      - name: totalRevenueByCategoryperMonth
+      - name: totalRevenueByCategoryPerMonth
         measures:
           - Orders.total
         dimensions: 
           - Products.category
+          - Products.vendor
         timeDimension: Orders.created_at
         granularity: month
     dimensions:
@@ -31,6 +33,12 @@ cubes:
       - name: created_at
         sql: created_at
         type: time
+      - name: product_category
+        sql: "{Products.category}"
+        type: string
+      - name: product_vendor
+        sql: "{Products.vendor}"
+        type: string
     measures:
       - name: total
         sql: total

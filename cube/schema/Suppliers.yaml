@@ -1,0 +1,22 @@
+cubes:
+  - name: Suppliers
+    shown: true
+    sql: SELECT * FROM public.suppliers
+    data_source: custom
+    dimensions:
+      - name: id
+        sql: id
+        type: number
+        primaryKey: true
+      - name: company
+        sql: company
+        type: string
+      - name: address
+        sql: address
+        type: string
+      - name: email
+        sql: email
+        type: string
+      - name: created_at
+        sql: created_at
+        type: time
