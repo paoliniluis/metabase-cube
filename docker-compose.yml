@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   metabase-cubejs:
-    image: metabase/metabase-enterprise:v1.44.6
+    image: metabase/metabase-enterprise:v1.47.6
     container_name: metabase-cubejs
     hostname: metabase
     volumes: 
