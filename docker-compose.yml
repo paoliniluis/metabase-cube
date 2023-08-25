@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   metabase-cubejs:
-    image: metabase/metabase-enterprise:v1.47.6
+    image: metabase/metabase-enterprise:v1.47.0
     container_name: metabase-cubejs
     hostname: metabase
     volumes: 
@@ -21,11 +21,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: 3072M
-        reservations:
-          cpus: '4'
+          cpus: '2'
           memory: 1536M
+        reservations:
+          cpus: '2'
+          memory: 1024M
     networks: 
       - metanet1-metabase
     depends_on: 
@@ -37,7 +37,7 @@ services:
       timeout: 5s
       retries: 3
   postgres-app-db-cubejs:
-    image: postgres:15.1-alpine
+    image: postgres:15.2-alpine
     container_name: postgres-app-db-cubejs
     hostname: postgres-app-db-cubejs
     environment:
@@ -48,27 +48,42 @@ services:
       - $PWD/postgres_origin:/var/lib/postgresql/data
     networks: 
       - metanet1-metabase
-    cpus: 1
-    mem_limit: 128m
+    cdeploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '1'
+          memory: 128M
     # command: -c log_statement=all
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
       interval: 10s
       timeout: 5s
       retries: 5
-  setup-cubejs:
-    image: bash:5.1.16
-    container_name: setup-cubejs
+  setup:
+    build: setup/.
+    container_name: setup
     volumes:
-      - $PWD/setup:/tmp
+      - $PWD/setup/setup.py:/app/setup.py
     networks:
       - metanet1-metabase
     depends_on:
       metabase-cubejs:
         condition: service_healthy
-    command: sh /tmp/metabase-setup.sh metabase:3000
-    cpus: 1
-    mem_limit: 128m
+    command: python /app/setup.py
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 64M
+        reservations:
+          cpus: '0.5'
+          memory: 32M
+    environment:
+      host: http://metabase
+      port: 3000
   cubejs:
     image: cubejs/cube:v0.33
     container_name: cubejs
@@ -94,6 +109,14 @@ services:
     depends_on:
       postgres-data-cubejs:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1536M
+        reservations:
+          cpus: '2'
+          memory: 1024M
   postgres-data-cubejs:
     image: metabase/qa-databases:postgres-sample-15
     container_name: postgres-data-cubejs
@@ -102,8 +125,14 @@ services:
       - metanet1-cubejs
     ports:
       - 5432:5432
-    cpus: 1
-    mem_limit: 128m
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1536M
+        reservations:
+          cpus: '2'
+          memory: 1024M
     command: -c log_statement=all
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U metabase -d sample"]
