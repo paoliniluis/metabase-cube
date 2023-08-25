@@ -48,7 +48,7 @@ services:
       - $PWD/postgres_origin:/var/lib/postgresql/data
     networks: 
       - metanet1-metabase
-    cdeploy:
+    deploy:
       resources:
         limits:
           cpus: '1'
