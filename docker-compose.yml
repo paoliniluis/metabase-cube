@@ -9,24 +9,30 @@ services:
     ports:
       - 3000:3000
     environment: 
-      - "MB_DB_TYPE=postgres"
-      - "MB_DB_DBNAME=metabase"
-      - "MB_DB_PORT=5432"
-      - "MB_DB_USER=metabase"
-      - "MB_DB_PASS=mysecretpassword"
-      - "MB_DB_HOST=postgres-app-db-cubejs"
-      - "MB_SITE_URL=http://localhost:3000"
-      - "MB_PREMIUM_EMBEDDING_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      - "JAVA_OPTS=-XX:MaxRAMPercentage=100"
-    cpus: 2
-    mem_limit: 2048m
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: mysecretpassword
+      MB_DB_HOST: postgres-app-db-cubejs
+      MB_SITE_URL: http://localhost:3000
+      MB_PREMIUM_EMBEDDING_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      JAVA_TOOL_OPTIONS: -Xmx1488m -Xms500m
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 3072M
+        reservations:
+          cpus: '4'
+          memory: 1536M
     networks: 
       - metanet1-metabase
     depends_on: 
       postgres-app-db-cubejs:
         condition: service_healthy
     healthcheck:
-      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      test: curl --fail -X GET -I http://localhost:3000/api/health || exit 1
       interval: 20s
       timeout: 5s
       retries: 3
@@ -64,7 +70,7 @@ services:
     cpus: 1
     mem_limit: 128m
   cubejs:
-    image: cubejs/cube:v0.31.22
+    image: cubejs/cube:v0.33
     container_name: cubejs
     hostname: cubejs
     ports:
@@ -89,7 +95,7 @@ services:
       postgres-data-cubejs:
         condition: service_healthy
   postgres-data-cubejs:
-    image: metabase/qa-databases:postgres-sample-12
+    image: metabase/qa-databases:postgres-sample-15
     container_name: postgres-data-cubejs
     hostname: postgres-data-cubejs
     networks: 
