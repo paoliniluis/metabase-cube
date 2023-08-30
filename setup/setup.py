@@ -42,7 +42,7 @@ if health() == 'healthy':
         sessionToken = session.post(setup, verify=False, json=setupPayload).json()['id']
 
         # Add new db's
-        postgres_sample_15 = {
+        postgres_sample_15_cube = {
             'engine':'postgres',
             'name':'cubejs',
             'details': {
@@ -59,8 +59,26 @@ if health() == 'healthy':
             'is_full_sync':True
         }
 
+        postgres_sample_15_sample = {
+            'engine':'postgres',
+            'name':'sample_db_postgres',
+            'details': {
+                'host':'postgres-data-cubejs',
+                'port':'5432',
+                'dbname':'sample',
+                'user':'metabase',
+                'password':'metasample123',
+                'schema-filters-type':'all',
+                'ssl':False,
+                'tunnel-enabled':False,
+                'advanced-options':False
+            },
+            'is_full_sync':True
+        }
 
-        session.post(database, verify=False, json=postgres_sample_15)
+
+        session.post(database, verify=False, json=postgres_sample_15_cube)
+        session.post(database, verify=False, json=postgres_sample_15_sample)
         
         # delete the sample DB
         session.delete(f'{database}/1')

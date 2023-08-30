@@ -1,0 +1,37 @@
+{
+  "name": "metabase-app-embed-example",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "client": "npm run start",
+    "server": "nodemon server.js",
+    "dev": "npm i && concurrently --kill-others-on-fail \"PORT=3001 npm run client\" \"PORT=3002 npm run server\""
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "concurrently": "^6.0.2",
+    "http-proxy-middleware": "^1.2.0",
+    "nodemon": "^2.0.21",
+    "prettier": "^2.2.1"
+  }
+}

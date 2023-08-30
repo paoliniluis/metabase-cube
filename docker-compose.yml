@@ -1,5 +1,28 @@
 version: '3.9'
 services:
+  node_full_app_embedding_demo:
+    build: .
+    container_name: webapp_full_app_embedding_demo
+    hostname: webapp
+    ports:
+      - 8080:8080
+    networks:
+      - metanet1-metabase
+    environment:
+      - METABASE_URL=http://localhost:3000
+      - PORT=8080
+      - METABASE_JWT_SHARED_SECRET=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    depends_on:
+      metabase-cubejs:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 64M
+        reservations:
+          cpus: '0.5'
+          memory: 32M
   metabase-cubejs:
     image: metabase/metabase-enterprise:v1.47.0
     container_name: metabase-cubejs
@@ -16,15 +39,25 @@ services:
       MB_DB_PASS: mysecretpassword
       MB_DB_HOST: postgres-app-db-cubejs
       MB_SITE_URL: http://localhost:3000
-      MB_PREMIUM_EMBEDDING_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       JAVA_TOOL_OPTIONS: -Xmx1488m -Xms500m
+      MB_EMBEDDING_APP_ORIGIN: "*"
+      MB_ENABLE_EMBEDDING: "true"
+      MB_PREMIUM_EMBEDDING_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      MB_JWT_ENABLED: "true"
+      MB_JWT_IDENTITY_PROVIDER_URI: "https://localhost:8080/api/auth/metabase"
+      MB_JWT_SHARED_SECRET: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      MB_EMAIL_SMTP_HOST: maildev-sub
+      MB_EMAIL_SMTP_PASSWORD: password
+      MB_EMAIL_SMTP_PORT: 1025
+      MB_EMAIL_SMTP_SECURITY: none
+      MB_EMAIL_SMTP_USERNAME: admin
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: '1'
           memory: 1536M
         reservations:
-          cpus: '2'
+          cpus: '1'
           memory: 1024M
     networks: 
       - metanet1-metabase
@@ -103,8 +136,7 @@ services:
       - CUBEJS_SQL_PASSWORD=mypassword
     volumes:
       - $PWD/cube:/cube/conf
-    networks: 
-      - metanet1-cubejs
+    networks:       
       - metanet1-metabase
     depends_on:
       postgres-data-cubejs:
@@ -121,10 +153,8 @@ services:
     image: metabase/qa-databases:postgres-sample-15
     container_name: postgres-data-cubejs
     hostname: postgres-data-cubejs
-    networks: 
-      - metanet1-cubejs
-    ports:
-      - 5432:5432
+    networks:
+      - metanet1-metabase
     deploy:
       resources:
         limits:
@@ -139,8 +169,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  maildev-sub-postgres:
+    image: maildev/maildev:2.1.0
+    container_name: maildev-sub-postgres
+    hostname: maildev-sub
+    ports:
+    - 3003:1080
+    networks:
+    - metanet1-metabase
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 64M
+        reservations:
+          cpus: '0.5'
+          memory: 32M
 networks: 
   metanet1-metabase:
-    driver: bridge
-  metanet1-cubejs:
     driver: bridge
